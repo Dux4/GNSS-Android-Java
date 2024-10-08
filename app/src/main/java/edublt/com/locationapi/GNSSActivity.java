@@ -11,6 +11,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.locationapi.R;
@@ -39,6 +41,48 @@ public class GNSSActivity extends AppCompatActivity {
         } catch (SecurityException e) {
             e.printStackTrace();
         }
+
+        // Setting up filter buttons
+        Button buttonFilterAll = findViewById(R.id.button_filter_all);
+        Button buttonFilterGPS = findViewById(R.id.button_filter_gps);
+        Button buttonFilterGalileo = findViewById(R.id.button_filter_galileo);
+        Button buttonFilterGlonass = findViewById(R.id.button_filter_glonass);
+        Button buttonFilterUsed = findViewById(R.id.button_filter_used);
+
+        buttonFilterAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                esferaCelesteView.setFilter("ALL", false);
+            }
+        });
+
+        buttonFilterGPS.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                esferaCelesteView.setFilter("GPS", false);
+            }
+        });
+
+        buttonFilterGalileo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                esferaCelesteView.setFilter("Galileo", false);
+            }
+        });
+
+        buttonFilterGlonass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                esferaCelesteView.setFilter("Glonass", false);
+            }
+        });
+
+        buttonFilterUsed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                esferaCelesteView.setFilter(esferaCelesteView.getCurrentConstellationFilter(), true);
+            }
+        });
     }
 
     private final LocationListener locationListener = new LocationListener() {

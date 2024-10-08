@@ -12,8 +12,10 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EsferaCelesteView extends View {
-    private Location newLocation;
     private GnssStatus newStatus;
     private Paint paint;
     private int r;
@@ -21,6 +23,10 @@ public class EsferaCelesteView extends View {
     private double latitude;
     private double longitude;
     private double altitude;
+    private String filterConstellation = "ALL";
+    private boolean filterUsedInFix = false;
+
+    private List<SatelliteInfo> satelliteInfoList = new ArrayList<>();
 
     public EsferaCelesteView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -30,6 +36,7 @@ public class EsferaCelesteView extends View {
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
+
         // coletando informações do tamanho tela de desenho
         width = getMeasuredWidth();
         height = getMeasuredHeight();
@@ -59,18 +66,19 @@ public class EsferaCelesteView extends View {
         // configurando o pincel para desenhar os satélites
         paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.FILL);
+
         // desenhando os satélites (caso exista um GnssStatus disponível)
         if (newStatus != null) {
-            for (int i = 0; i < newStatus.getSatelliteCount(); i++) {
-                float az = newStatus.getAzimuthDegrees(i);
-                float el = newStatus.getElevationDegrees(i);
-                float x = (float) (r * Math.cos(Math.toRadians(el)) * Math.sin(Math.toRadians(az)));
-                float y = (float) (r * Math.cos(Math.toRadians(el)) * Math.cos(Math.toRadians(az)));
-                canvas.drawCircle(computeXc(x), computeYc(y), 10, paint);
-                paint.setTextAlign(Paint.Align.LEFT);
-                paint.setTextSize(30);
-                String satID = newStatus.getSvid(i) + "";
-                canvas.drawText(satID, computeXc(x) + 10, computeYc(y) + 10, paint);
+            for (SatelliteInfo satInfo : satelliteInfoList) {
+                if (filterConstellation.equals("ALL") || satInfo.constellation.equals(filterConstellation)) {
+                    if (!filterUsedInFix || satInfo.usedInFix) {
+                        canvas.drawCircle(computeXc(satInfo.x), computeYc(satInfo.y), 10, paint);
+                        paint.setTextAlign(Paint.Align.LEFT);
+                        paint.setTextSize(30);
+                        String satDetails = satInfo.svid + " (" + satInfo.constellation + ") " + (satInfo.usedInFix ? "Used" : "Not Used");
+                        canvas.drawText(satDetails, computeXc(satInfo.x) + 10, computeYc(satInfo.y) + 10, paint);
+                    }
+                }
             }
         }
 
@@ -103,6 +111,16 @@ public class EsferaCelesteView extends View {
 
     public void setNewStatus(GnssStatus newStatus) {
         this.newStatus = newStatus;
+        satelliteInfoList.clear();
+        for (int i = 0; i < newStatus.getSatelliteCount(); i++) {
+            float az = newStatus.getAzimuthDegrees(i);
+            float el = newStatus.getElevationDegrees(i);
+            float x = (float) (r * Math.cos(Math.toRadians(el)) * Math.sin(Math.toRadians(az)));
+            float y = (float) (r * Math.cos(Math.toRadians(el)) * Math.cos(Math.toRadians(az)));
+            String constellation = getConstellation(newStatus.getConstellationType(i));
+            boolean usedInFix = newStatus.usedInFix(i);
+            satelliteInfoList.add(new SatelliteInfo(newStatus.getSvid(i), constellation, usedInFix, x, y));
+        }
         invalidate();
     }
 
@@ -111,5 +129,44 @@ public class EsferaCelesteView extends View {
         this.longitude = location.getLongitude();
         this.altitude = location.getAltitude();
         invalidate();
+    }
+
+    public void setFilter(String constellation, boolean usedInFix) {
+        this.filterConstellation = constellation;
+        this.filterUsedInFix = usedInFix;
+        invalidate();
+    }
+
+    public String getCurrentConstellationFilter() {
+        return filterConstellation;
+    }
+
+    private String getConstellation(int constellationType) {
+        switch (constellationType) {
+            case GnssStatus.CONSTELLATION_GPS:
+                return "GPS";
+            case GnssStatus.CONSTELLATION_GLONASS:
+                return "Glonass";
+            case GnssStatus.CONSTELLATION_GALILEO:
+                return "Galileo";
+            default:
+                return "Other";
+        }
+    }
+
+    static class SatelliteInfo {
+        int svid;
+        String constellation;
+        boolean usedInFix;
+        float x;
+        float y;
+
+        SatelliteInfo(int svid, String constellation, boolean usedInFix, float x, float y) {
+            this.svid = svid;
+            this.constellation = constellation;
+            this.usedInFix = usedInFix;
+            this.x = x;
+            this.y = y;
+        }
     }
 }
