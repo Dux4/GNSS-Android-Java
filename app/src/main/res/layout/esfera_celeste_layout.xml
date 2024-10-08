@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <edublt.com.locationapi.EsferaCelesteView
+        <edublt.com.locationapi.EsferaCelesteView
         android:id="@+id/esferacelesteview_id"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
