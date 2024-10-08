@@ -85,10 +85,11 @@ public class EsferaCelesteView extends View {
         // configurando o pincel para desenhar a posição do usuário
         paint.setColor(Color.GREEN);
         paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTextSize(30);
 
         String userPosition = "Lat: " + latitude + ", Lon: " + longitude + ", Alt: " + altitude + "m";
         adjustTextSize(paint, width, userPosition);
-        canvas.drawText(userPosition, computeXc(0), computeYc(r + 50), paint);
+        canvas.drawText(userPosition, computeXc(0), computeYc(-r - 50), paint);
     }
 
     private void adjustTextSize(Paint paint, int width, String text) {
@@ -119,7 +120,8 @@ public class EsferaCelesteView extends View {
             float y = (float) (r * Math.cos(Math.toRadians(el)) * Math.cos(Math.toRadians(az)));
             String constellation = getConstellation(newStatus.getConstellationType(i));
             boolean usedInFix = newStatus.usedInFix(i);
-            satelliteInfoList.add(new SatelliteInfo(newStatus.getSvid(i), constellation, usedInFix, x, y));
+            float snr = newStatus.getCn0DbHz(i);
+            satelliteInfoList.add(new SatelliteInfo(newStatus.getSvid(i), constellation, usedInFix, x, y, snr));
         }
         invalidate();
     }
@@ -135,6 +137,17 @@ public class EsferaCelesteView extends View {
         this.filterConstellation = constellation;
         this.filterUsedInFix = usedInFix;
         invalidate();
+    }
+
+    public List<SatelliteInfo> getFilteredSatelliteInfoList() {
+        List<SatelliteInfo> filteredList = new ArrayList<>();
+        for (SatelliteInfo satInfo : satelliteInfoList) {
+            if ((filterConstellation.equals("ALL") || satInfo.constellation.equals(filterConstellation)) &&
+                    (!filterUsedInFix || satInfo.usedInFix)) {
+                filteredList.add(satInfo);
+            }
+        }
+        return filteredList;
     }
 
     public String getCurrentConstellationFilter() {
@@ -160,13 +173,15 @@ public class EsferaCelesteView extends View {
         boolean usedInFix;
         float x;
         float y;
+        float snr;
 
-        SatelliteInfo(int svid, String constellation, boolean usedInFix, float x, float y) {
+        SatelliteInfo(int svid, String constellation, boolean usedInFix, float x, float y, float snr) {
             this.svid = svid;
             this.constellation = constellation;
             this.usedInFix = usedInFix;
             this.x = x;
             this.y = y;
+            this.snr = snr;
         }
     }
 }

@@ -17,8 +17,12 @@ import android.widget.Toast;
 
 import com.example.locationapi.R;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GNSSActivity extends AppCompatActivity {
     private EsferaCelesteView esferaCelesteView;
+    private SignalQualityView signalQualityView;
     private LocationManager locationManager;
 
     @Override
@@ -27,6 +31,7 @@ public class GNSSActivity extends AppCompatActivity {
         setContentView(R.layout.activity_gnss);
 
         esferaCelesteView = findViewById(R.id.esferacelesteview_id);
+        signalQualityView = findViewById(R.id.signal_quality_view);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         // Checking for location permissions
@@ -53,6 +58,7 @@ public class GNSSActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 esferaCelesteView.setFilter("ALL", false);
+                updateSignalQualityView();
             }
         });
 
@@ -60,6 +66,7 @@ public class GNSSActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 esferaCelesteView.setFilter("GPS", false);
+                updateSignalQualityView();
             }
         });
 
@@ -67,6 +74,7 @@ public class GNSSActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 esferaCelesteView.setFilter("Galileo", false);
+                updateSignalQualityView();
             }
         });
 
@@ -74,6 +82,7 @@ public class GNSSActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 esferaCelesteView.setFilter("Glonass", false);
+                updateSignalQualityView();
             }
         });
 
@@ -81,14 +90,24 @@ public class GNSSActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 esferaCelesteView.setFilter(esferaCelesteView.getCurrentConstellationFilter(), true);
+                updateSignalQualityView();
             }
         });
+    }
+
+    private void updateSignalQualityView() {
+        List<SignalQualityView.SatelliteInfo> satelliteInfoList = new ArrayList<>();
+        for (EsferaCelesteView.SatelliteInfo satInfo : esferaCelesteView.getFilteredSatelliteInfoList()) {
+            satelliteInfoList.add(new SignalQualityView.SatelliteInfo(satInfo.svid, satInfo.snr));
+        }
+        signalQualityView.setSatelliteInfoList(satelliteInfoList);
     }
 
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(@NonNull Location location) {
             esferaCelesteView.setNewLocation(location);
+            updateSignalQualityView();
         }
 
         @Override
@@ -109,6 +128,7 @@ public class GNSSActivity extends AppCompatActivity {
         @Override
         public void onSatelliteStatusChanged(@NonNull GnssStatus status) {
             esferaCelesteView.setNewStatus(status);
+            updateSignalQualityView();
         }
     };
 }
