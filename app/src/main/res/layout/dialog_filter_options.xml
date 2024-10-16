@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/radio_group"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RadioButton
+        android:id="@+id/radio_all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Todos" />
+
+    <RadioButton
+        android:id="@+id/radio_gps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GPS" />
+
+    <RadioButton
+        android:id="@+id/radio_galileo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Galileo" />
+
+    <RadioButton
+        android:id="@+id/radio_glonass"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Glonass" />
+
+    <RadioButton
+        android:id="@+id/radio_used"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Usados" />
+</RadioGroup>

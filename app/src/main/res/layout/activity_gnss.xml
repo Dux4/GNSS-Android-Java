@@ -21,52 +21,18 @@
         android:layout_width="0dp"
         android:layout_height="200dp"
         app:layout_constraintTop_toBottomOf="@id/esferacelesteview_id"
-        app:layout_constraintBottom_toTopOf="@id/filter_buttons"
+        app:layout_constraintBottom_toTopOf="@id/button_filter"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/filter_buttons"
-        android:layout_width="0dp"
+    <Button
+        android:id="@+id/button_filter"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:text="Filter"
+        app:layout_constraintTop_toBottomOf="@id/signal_quality_view"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <Button
-            android:id="@+id/button_filter_all"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="All" />
-
-        <Button
-            android:id="@+id/button_filter_gps"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="GPS" />
-
-        <Button
-            android:id="@+id/button_filter_galileo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Galileo" />
-
-        <Button
-            android:id="@+id/button_filter_glonass"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Glonass" />
-
-        <Button
-            android:id="@+id/button_filter_used"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Used" />
-    </LinearLayout>
+        app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
