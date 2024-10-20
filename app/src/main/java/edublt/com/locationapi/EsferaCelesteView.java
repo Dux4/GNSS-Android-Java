@@ -2,11 +2,13 @@ package edublt.com.locationapi;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.location.GnssStatus;
 import android.location.Location;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -31,6 +33,8 @@ public class EsferaCelesteView extends View {
 
     // Variável para armazenar o texto formatado
     private String formattedText;
+
+    private static final String PREFS_KEY_FORMAT = "location_format";
 
     public EsferaCelesteView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -144,8 +148,16 @@ public class EsferaCelesteView extends View {
         this.latitude = location.getLatitude();
         this.longitude = location.getLongitude();
         this.altitude = location.getAltitude();
-        updateLocationTextFormat(LocationFormat.DEGREES); // Define o formato padrão ao atualizar a localização
+
+        // Carrega o formato atual das SharedPreferences antes de atualizar o texto
+        updateLocationTextFormat(LocationFormat.valueOf(getSavedLocationFormat())); // Define o formato com base no salvo
         invalidate(); // Solicita que a tela seja redesenhada
+    }
+
+    // Método para obter o formato salvo das SharedPreferences
+    private String getSavedLocationFormat() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        return prefs.getString(PREFS_KEY_FORMAT, LocationFormat.DEGREES.name());
     }
 
     // Define os filtros para exibição de satélites e atualiza a tela
@@ -197,56 +209,76 @@ public class EsferaCelesteView extends View {
         new AlertDialog.Builder(getContext())
                 .setTitle("Selecione o formato de exibição")
                 .setItems(formats, (dialog, which) -> {
+                    LocationFormat selectedFormat;
                     switch (which) {
                         case 0:
-                            updateLocationTextFormat(LocationFormat.DEGREES);
+                            selectedFormat = LocationFormat.DEGREES;
                             break;
                         case 1:
-                            updateLocationTextFormat(LocationFormat.DEGREES_MINUTES);
+                            selectedFormat = LocationFormat.DEGREES_MINUTES;
                             break;
                         case 2:
-                            updateLocationTextFormat(LocationFormat.DEGREES_MINUTES_SECONDS);
+                            selectedFormat = LocationFormat.DEGREES_MINUTES_SECONDS;
                             break;
+                        default:
+                            return;
                     }
+                    // Salvar o formato selecionado nas SharedPreferences
+                    saveLocationFormat(selectedFormat);
+                    updateLocationTextFormat(selectedFormat); // Atualizar a exibição com o formato selecionado
                     invalidate(); // Solicita que a tela seja redesenhada
                 })
                 .show();
     }
 
-    // Atualiza o texto de localização baseado no formato selecionado
+    // Salva o formato selecionado nas SharedPreferences
+    private void saveLocationFormat(LocationFormat format) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PREFS_KEY_FORMAT, format.name());
+        editor.apply();
+    }
+
+    // Atualiza o texto formatado de acordo com o formato selecionado
     private void updateLocationTextFormat(LocationFormat format) {
         switch (format) {
             case DEGREES:
                 formattedText = String.format("Lat: %.5f, Long: %.5f, Alt: %.2f", latitude, longitude, altitude);
                 break;
             case DEGREES_MINUTES:
-                formattedText = String.format("Lat: %d°%.5f', Long: %d°%.5f', Alt: %.2f",
-                        (int) latitude, Math.abs(latitude % 1 * 60),
-                        (int) longitude, Math.abs(longitude % 1 * 60), altitude);
+                formattedText = String.format("Lat: %s, Long: %s, Alt: %.2f",
+                        convertToDegreesMinutes(latitude), convertToDegreesMinutes(longitude), altitude);
                 break;
             case DEGREES_MINUTES_SECONDS:
-                formattedText = String.format("Lat: %d°%d'%.2f\", Long: %d°%d'%.2f\", Alt: %.2f",
-                        (int) latitude, (int) Math.abs(latitude % 1 * 60), Math.abs(latitude % 1 * 3600 % 60),
-                        (int) longitude, (int) Math.abs(longitude % 1 * 60), Math.abs(longitude % 1 * 3600 % 60), altitude);
+                formattedText = String.format("Lat: %s, Long: %s, Alt: %.2f",
+                        convertToDegreesMinutesSeconds(latitude), convertToDegreesMinutesSeconds(longitude), altitude);
                 break;
         }
     }
 
-    // Definição dos formatos de localização
-    private enum LocationFormat {
-        DEGREES,
-        DEGREES_MINUTES,
-        DEGREES_MINUTES_SECONDS
+    // Método para converter graus para graus-minutos
+    private String convertToDegreesMinutes(double value) {
+        int degrees = (int) value;
+        double minutes = Math.abs((value - degrees) * 60);
+        return String.format("%d°%.5f'", degrees, minutes);
     }
 
-    // Classe para armazenar informações de satélites
+    // Método para converter graus para graus-minutos-segundos
+    private String convertToDegreesMinutesSeconds(double value) {
+        int degrees = (int) value;
+        double minutes = Math.abs((value - degrees) * 60);
+        int intMinutes = (int) minutes;
+        double seconds = (minutes - intMinutes) * 60;
+        return String.format("%d°%d'%.2f\"", degrees, intMinutes, seconds);
+    }
+
+    // Classe interna para informações do satélite
     public static class SatelliteInfo {
-        int svid;
-        String constellation;
-        boolean usedInFix;
-        float x;
-        float y;
-        float snr;
+        int svid; // ID do satélite
+        String constellation; // Constelação do satélite
+        boolean usedInFix; // Indica se o satélite é usado na localização
+        float x, y; // Posições do satélite
+        float snr; // Qualidade do sinal
 
         SatelliteInfo(int svid, String constellation, boolean usedInFix, float x, float y, float snr) {
             this.svid = svid;
@@ -256,5 +288,12 @@ public class EsferaCelesteView extends View {
             this.y = y;
             this.snr = snr;
         }
+    }
+
+    // Enum para os formatos de localização
+    private enum LocationFormat {
+        DEGREES,
+        DEGREES_MINUTES,
+        DEGREES_MINUTES_SECONDS
     }
 }
