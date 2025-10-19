@@ -133,12 +133,6 @@ public class GNSSActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-        @Override
-        public void onProviderEnabled(@NonNull String provider) {}
-
-        @Override
         public void onProviderDisabled(@NonNull String provider) {
             Toast.makeText(GNSSActivity.this, "Por favor, ative os serviços de localização", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
